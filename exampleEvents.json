@@ -1,0 +1,32 @@
+{
+    "header": {
+        "X-WR-CALNAME": "Example",
+        "X-WR-TIMEZONE": "Europe/London",
+        "PRODID": "-//Example PRODID v2021//EN",
+        "VERSION": "2.0"
+    },
+    "event1": {
+        "SUMMARY": "This is the summary for event1",
+        "LOCATION": "This is the location for event1",
+        "DTSTAMP": "20210610T110000Z",
+        "DTSTART": "20210610T110000",
+        "DTEND": "20210610T180000",
+        "CLASS": "PUBLIC",
+        "DESCRIPTION": "This is the description for event1",
+        "UID": "00000000000000000000000000000001",
+        "ReadableDTSTART": "10th June, 2021 at 11:00 (24Hr) / 11:00AM (12Hr)",
+        "ReadableDTEND": "10th June, 2021 at 18:00 (24Hr) / 6:00PM (12Hr)"
+    },
+    "event2": {
+        "SUMMARY": "This is the summary for event2",
+        "LOCATION": "This is the location for event2",
+        "DTSTAMP": "20210710T110000Z",
+        "DTSTART": "20210710T110000",
+        "DTEND": "20210710T180000",
+        "CLASS": "PUBLIC",
+        "DESCRIPTION": "This is the description for event2",
+        "UID": "00000000000000000000000000000002",
+        "ReadableDTSTART": "10th July, 2021 at 11:00 (24Hr) / 11:00AM (12Hr)",
+        "ReadableDTEND": "10th July, 2021 at 18:00 (24Hr) / 6:00PM (12Hr)"
+    }
+}
