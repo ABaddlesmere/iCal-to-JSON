@@ -116,22 +116,12 @@ class iCalSettings:
     def __init__(self, **settings):
 
         '''
-        customKey : The key that will be associated with each of your events.
-        Event keys will follow the format of {customKey}{i+=1}
-
         autoReadableDate : Automatically inserts a readable date format into the data
         Calls convert_times
 
         autoRemovePastEvents : Automatically removes any past events
         Calls remove_past_events
         '''
-        if "customKey" in settings:
-            if type(settings['customKey']) == str:
-                self.__customKey = settings['customKey']
-            else:
-                raise ICALInvalidSetting(evidence="customKey", expectedType=str, gotType=type(settings['customKey']))
-        else:
-            self.__customKey = "event"
 
         if "autoReadableDate" in settings:
             if type(settings['autoReadableDate']) == bool:
@@ -148,9 +138,6 @@ class iCalSettings:
                 raise ICALInvalidSetting(evidence="autoRemovePastEvents", expectedType=bool, gotType=type(settings['autoRemovePastEvents']))
         else:
             self.__autoRemovePastEvents = False
-    
-    def getKey(self) -> str:
-        return self.__customKey
 
     def getAutoReadableDate(self) -> bool:
         return self.__autoReadableDate
@@ -162,7 +149,6 @@ class iCalSettings:
 class iCal:
     def __init__(self, settings: iCalSettings, rawiCal:str=""):
         self.__settings = settings
-        self.__coreEventKey = self.__settings.getKey()
         self.__rawICAL = ""
         self.__2dICAL = []
         self.__ICAL = {}
@@ -210,26 +196,37 @@ class iCal:
         Returns a dictionary of events
         '''
         eventDict = {}
-        eventID = 0
+        validEvents = {
+            "VCALENDAR": 0,
+            "BEGIN:VCALENDAR": 0,
+            "VEVENT": 0,
+            "VTIMEZONE": 0,
+            "STANDARD": 0,
+            "DAYLIGHT": 0,
+            "VALARM": 0,
+            "VTODO": 0,
+            "VJOURNAL": 0,
+            "VFREEBUSY": 0
+            }
         for entry in ICAL2d:
-            if entry[0] == "VEVENT":
-                eventID += 1
-                eventKey = f"{self.__coreEventKey}{eventID}"
-                eventDict[eventKey] = {}
-                eventDict[eventKey]['SUMMARY'] = entry[1].replace("SUMMARY:","")
-                eventDict[eventKey]['LOCATION'] = entry[2].replace("LOCATION:","")
-                eventDict[eventKey]['DTSTAMP'] = entry[3].replace("DTSTAMP:","")
-                eventDict[eventKey]['DTSTART'] = entry[4].replace("DTSTART:","")
-                eventDict[eventKey]['DTEND'] = entry[5].replace("DTEND:","")
-                eventDict[eventKey]['CLASS'] = entry[6].replace("CLASS:","")
-                eventDict[eventKey]['DESCRIPTION'] = entry[7].replace("DESCRIPTION:","")
-                eventDict[eventKey]['UID'] = entry[8].replace("UID:","")
-            else:
-                eventDict['header'] = {}
-                eventDict['header']['X-WR-CALNAME'] = entry[1].replace("X-WR-CALNAME:","")
-                eventDict['header']['X-WR-TIMEZONE'] = entry[2].replace("X-WR-TIMEZONE:","")
-                eventDict['header']['PRODID'] = entry[3].replace("PRODID:","")
-                eventDict['header']['VERSION'] = entry[4].replace("VERSION:","")
+            if entry[0] in validEvents:
+                if entry[0] == "BEGIN:VCALENDAR":
+                    entry[0] = "VCALENDAR"
+                validEvents[entry[0]] += 1
+                entryKey = f"{entry[0]}{validEvents[entry[0]]}"
+                eventDict[entryKey] = {}
+                for value in entry:
+                    if ":" in value and "END" not in value:
+                        temps = value.split(":", 1)
+                        eventDict[entryKey][temps[0]] = temps[1]
+                    elif ":" in value and "DTEND" in value:
+                        temps = value.split(":", 1)
+                        eventDict[entryKey][temps[0]] = temps[1]
+                    else:
+                        continue
+
+        for key, _ in validEvents.items():
+            validEvents[key] = 0
 
         return eventDict
 
@@ -255,7 +252,7 @@ class iCal:
         if not self.__has_ical_loaded():
             raise ICALNotLoaded()
         for key, event in self.__ICAL.items():
-            if key == "header":
+            if "DTSTAMP" not in event:
                 continue
             event['ReadableDTSTART'] = ""
             event['ReadableDTEND'] = ""
@@ -334,7 +331,7 @@ class iCal:
         for key in poppableKeys:
             self.__ICAL.pop(key)
 
-    def saveJson(self, fileName:str, filePath:str=""):
+    def save_JSON(self, fileName:str, filePath:str=""):
         '''
         Public method for saving iCal as JSON
         '''
