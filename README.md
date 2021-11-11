@@ -1,6 +1,6 @@
 # iCal to JSON
 
-**Version 1.1.0**
+**Version 1.1.1**
 
 
 This class allows you to take iCal data and turn it into a JSON format. This version supports the following calendar events:
