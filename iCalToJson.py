@@ -181,7 +181,7 @@ class iCal:
         '''
         return self.__rawICAL != ""
 
-    def __event_string_to_2dlist(self, rawICAL: str) -> list:
+    def __object_string_to_2dlist(self, rawICAL: str) -> list:
         '''
         Returns a list of events
         '''
@@ -191,12 +191,12 @@ class iCal:
             temp2.append(item.split("\n"))
         return temp2
 
-    def __event_list_to_dict(self, ICAL2d: list) -> dict:
+    def __object_list_to_dict(self, ICAL2d: list) -> dict:
         '''
-        Returns a dictionary of events
+        Returns a dictionary of events/objects
         '''
-        eventDict = {}
-        validEvents = {
+        objectDict = {}
+        validObjects = {
             "VCALENDAR": 0,
             "BEGIN:VCALENDAR": 0,
             "VEVENT": 0,
@@ -209,26 +209,26 @@ class iCal:
             "VFREEBUSY": 0
             }
         for entry in ICAL2d:
-            if entry[0] in validEvents:
+            if entry[0] in validObjects:
                 if entry[0] == "BEGIN:VCALENDAR":
                     entry[0] = "VCALENDAR"
-                validEvents[entry[0]] += 1
-                entryKey = f"{entry[0]}{validEvents[entry[0]]}"
-                eventDict[entryKey] = {}
+                validObjects[entry[0]] += 1
+                entryKey = f"{entry[0]}{validObjects[entry[0]]}"
+                objectDict[entryKey] = {}
                 for value in entry:
                     if ":" in value and "END" not in value:
                         temps = value.split(":", 1)
-                        eventDict[entryKey][temps[0]] = temps[1]
+                        objectDict[entryKey][temps[0]] = temps[1]
                     elif ":" in value and "DTEND" in value:
                         temps = value.split(":", 1)
-                        eventDict[entryKey][temps[0]] = temps[1]
+                        objectDict[entryKey][temps[0]] = temps[1]
                     else:
                         continue
 
-        for key, _ in validEvents.items():
-            validEvents[key] = 0
+        for key, _ in validObjects.items():
+            validObjects[key] = 0
 
-        return eventDict
+        return objectDict
 
     def __requestFromWebpage(self, url: str) -> Union[str]:
         '''
@@ -245,7 +245,7 @@ class iCal:
         else:
             raise ICALLoadErrorWP(rawdata)
 
-    def __format_event_times(self):
+    def __format_object_times(self):
         '''
         Adds readable dates and times to the events
         '''
@@ -292,7 +292,7 @@ class iCal:
         '''
         Public method for adding more human readable times and dates
         '''
-        self.__format_event_times()
+        self.__format_object_times()
 
     def load_iCal(self, iCal:str):
         '''
@@ -300,8 +300,8 @@ class iCal:
         '''
         if self.__validate_iCal(iCal):
             self.__rawICAL = iCal
-            self.__2dICAL = self.__event_string_to_2dlist(self.__rawICAL)
-            self.__ICAL = self.__event_list_to_dict(self.__2dICAL)
+            self.__2dICAL = self.__object_string_to_2dlist(self.__rawICAL)
+            self.__ICAL = self.__object_list_to_dict(self.__2dICAL)
             self.__auto_settings()
         else:
             raise ICALLoadError(evidence=iCal)
