@@ -11,13 +11,18 @@ converter = iCal(settings)
 
 #Load our data into the converter.
 #This also formats the data into a dictionary and applies any auto settings, like autoReadableDate
+
+#For data from a website:
+# converter.load_iCal_from_url(URL)
+
+#For data in a string
 converter.load_iCal(DATA)
 
 #We can get the dictionary by callng get_json()
 ourData = converter.get_json()
 
 #Save the data in a json file
-converter.saveJson("eventsTest.json")
+converter.save_JSON("exampleEvents.json")
 
 #Remove past events. This can be called no matter the value of the autoRemovePastEvents setting
 converter.remove_past_events()

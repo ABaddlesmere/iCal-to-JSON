@@ -1,11 +1,11 @@
 {
-    "header": {
+    "VCALENDAR1": {
         "X-WR-CALNAME": "Example",
         "X-WR-TIMEZONE": "Europe/London",
         "PRODID": "-//Example PRODID v2021//EN",
         "VERSION": "2.0"
     },
-    "event1": {
+    "VEVENT1": {
         "SUMMARY": "This is the summary for event1",
         "LOCATION": "This is the location for event1",
         "DTSTAMP": "20210610T110000Z",
@@ -17,7 +17,7 @@
         "ReadableDTSTART": "10th June, 2021 at 11:00 (24Hr) / 11:00AM (12Hr)",
         "ReadableDTEND": "10th June, 2021 at 18:00 (24Hr) / 6:00PM (12Hr)"
     },
-    "event2": {
+    "VEVENT2": {
         "SUMMARY": "This is the summary for event2",
         "LOCATION": "This is the location for event2",
         "DTSTAMP": "20210710T110000Z",
