@@ -241,6 +241,24 @@ class iCal:
 
         return readableDT
 
+    def set_setting(self, setting: str, value: bool) -> None:
+        '''
+        Sets the setting to the new value
+        '''
+        if setting == "autoReadableDate":
+            self.__autoReadableDate = value
+        if setting == "autoRemovePastEvents":
+            self.__autoRemovePastEvents = value
+
+    def get_setting(self, setting: str) -> bool:
+        '''
+        Returns the value for the specified setting
+        '''
+        if setting == "autoReadableDate":
+            return self.__autoReadableDate
+        if setting == "autoRemovePastEvents":
+            return self.__autoRemovePastEvents
+
     def get_raw_ical(self) -> str:
         '''
         Returns the raw iCal data provided by the user
