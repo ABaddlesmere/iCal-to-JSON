@@ -44,18 +44,24 @@ When constructing up the iCal object, you can specify some settings. These also 
 
 > `autoReadableDate`: Boolean. If True, any loaded iCal data will automatically have human readable dates added to it.
 >> Defaults to `False` 
+
 >> Set value with `set_setting("autoReadableDate", value: bool)`
+
 >> Get value with `get_settings("autoReadableDate")`
 
 > `autoRemovePastEvents`: Boolean. If True, any loaded iCal data will automatically have expired events removed from it.
 >> Defaults to `False`
+
 >> Set value with `set_setting("autoRemovePastEvents", value: bool)`
+
 >> Get value with `get_settings("autoRemovePastEvents")`
 
 You can also load your iCal data into the constructor.
 > `rawiCal`: String. Raw iCal data, i.e. non-edited iCal data, otherwise an `ICALLoadError` error will be thrown.
 >> Defaults to `None` or `""`
+
 >> Set value with `load_iCal(iCal: str)` (see below)
+
 >> Get value with `get_raw_ical()`
 
 > `get_json()`
