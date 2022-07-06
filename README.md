@@ -1,6 +1,15 @@
 # iCal to JSON
 
-**Version 1.1.1**
+**Version 1.2.0**
+
+## Version 1.2.0 Updates
+
+- Removed iCalSettings. autoReadableDate and autoRemovePastEvents settings are now passed in the iCal constructor.
+- Removed iCalSettings errors.
+- Added setters and getters for settings
+- Added getter for raw iCal data
+- Fixed typo in error definitions
+- Updated example to reflect affected changes
 
 
 This class allows you to take iCal data and turn it into a JSON format. This version supports the following calendar events:
@@ -29,17 +38,31 @@ See example.py, or the documentation for help.
 
 # Documentation
 
-## iCal Settings
-
-When creating the converter object, you must pass an iCalSettings object as well.
-
-> `autoReadableDate` : BOOLEAN : If True, any loaded iCal data will automatically have human readable dates added to it.
->> Defaults to `False`
-
-> `autoRemovePastEvents` : BOOLEAN : If True, any loaded iCal data will automatically have expired events removed from it.
->> Defaults to `False`
-
 ## iCal
+
+When constructing up the iCal object, you can specify some settings. These also come with setter and getter methods.
+
+> `autoReadableDate`: Boolean. If True, any loaded iCal data will automatically have human readable dates added to it.
+>> Defaults to `False` 
+
+>> Set value with `set_setting("autoReadableDate", value: bool)`
+
+>> Get value with `get_settings("autoReadableDate")`
+
+> `autoRemovePastEvents`: Boolean. If True, any loaded iCal data will automatically have expired events removed from it.
+>> Defaults to `False`
+
+>> Set value with `set_setting("autoRemovePastEvents", value: bool)`
+
+>> Get value with `get_settings("autoRemovePastEvents")`
+
+You can also load your iCal data into the constructor.
+> `rawiCal`: String. Raw iCal data, i.e. non-edited iCal data, otherwise an `ICALLoadError` error will be thrown.
+>> Defaults to `None` or `""`
+
+>> Set value with `load_iCal(iCal: str)` (see below)
+
+>> Get value with `get_raw_ical()`
 
 > `get_json()`
 >> Returns the iCal data in its current state.
@@ -60,9 +83,6 @@ When creating the converter object, you must pass an iCalSettings object as well
 >> Saves the currently loaded data in a json file.
 
 ## Exceptions
-
-> `ICALInvalidSetting`
->> Raised if the defined setting is of the wrong data type.
 
 > `ICALNotLoaded`
 >> Raised if a method has been called that requires loaded iCal data, but no iCal data is loaded.

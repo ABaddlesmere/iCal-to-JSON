@@ -3,6 +3,7 @@ import requests
 import datetime
 from typing import Union
 import os
+import urllib3
 
 DAY_SUFFIX = {
     "1":"st",
@@ -70,17 +71,13 @@ class ICalEditor(Base_ICAL_Error):
     def __init__(self, extra):
         super().__init__("Error trying to edit iCal data", extra)
 
-class ICalSettings(Base_ICAL_Error):
-    def __init__(self, extra):
-        super().__init__("Error trying to use iCal settings", extra)
-
 class ICALNotLoaded(ICalEditor):
-    def __init__(self, evidence=Union[str]):
+    def __init__(self, evidence:Union[str, None]):
         extra = "There is currently no iCal data loaded. Please load some data and try again"
         super().__init__(extra)
 
 class ICALLoadError(ICalLoading):
-    def __init__(self, evidence=Union[str]):
+    def __init__(self, evidence:Union[str, None]):
         extra = "The iCal you tried to load is not correct type or is in an invalid format. iCal data must be of type STRING and begin with 'BEGIN:VCALENDAR'"
         if evidence is not None:
             extra += f"[{type(evidence)}]"
@@ -89,7 +86,7 @@ class ICALLoadError(ICalLoading):
         super().__init__(extra)
 
 class ICALLoadErrorWP(ICalLoading):
-    def __init__(self, evidence=Union[requests.Response]):
+    def __init__(self, evidence:Union[requests.Response, None]):
         extra = "The iCal you tried to load is not correct type or is in an invalid format. iCal data must be of type STRING and begin with 'BEGIN:VCALENDAR'"
         if evidence is not None:
             extra += f"[{type(evidence)}]"
@@ -98,7 +95,7 @@ class ICALLoadErrorWP(ICalLoading):
         super().__init__(extra)
 
 class ICALInvalidURL(ICalLoading):
-    def __init__(self, evidence=Union[str]):
+    def __init__(self, evidence:Union[str, None]):
         extra = "The URL you passed did not exist or there was an issue connecting to it"
         if evidence is not None:
             extra += f"[{evidence}]"
@@ -106,51 +103,13 @@ class ICALInvalidURL(ICalLoading):
                 extra += f" [{evidence[:15]}]"
         super().__init__(extra)
 
-class ICALInvalidSetting(ICalSettings):
-    def __init__(self, evidence=Union[str], expectedType=Union[object], gotType=Union[object]):
-        extra = f"Setting {evidence} is not a valid setting type. [Expected: {expectedType}] [Got: {gotType}]"
-        super().__init__(extra)
-
-
-class iCalSettings:
-    def __init__(self, **settings):
-
-        '''
-        autoReadableDate : Automatically inserts a readable date format into the data
-        Calls convert_times
-
-        autoRemovePastEvents : Automatically removes any past events
-        Calls remove_past_events
-        '''
-
-        if "autoReadableDate" in settings:
-            if type(settings['autoReadableDate']) == bool:
-                self.__autoReadableDate = settings['autoReadableDate']
-            else:
-                raise ICALInvalidSetting(evidence="autoReadableDate", expectedType=bool, gotType=type(settings['autoReadableDate']))
-        else:
-            self.__autoReadableDate = False
-
-        if "autoRemovePastEvents" in settings:
-            if type(settings['autoRemovePastEvents']) == bool:
-                self.__autoRemovePastEvents = settings['autoRemovePastEvents']
-            else:
-                raise ICALInvalidSetting(evidence="autoRemovePastEvents", expectedType=bool, gotType=type(settings['autoRemovePastEvents']))
-        else:
-            self.__autoRemovePastEvents = False
-
-    def getAutoReadableDate(self) -> bool:
-        return self.__autoReadableDate
-
-    def getAutoRemovePastEvents(self) -> bool:
-        return self.__autoRemovePastEvents
 
 
 class iCal:
-    def __init__(self, settings: iCalSettings, rawiCal:str=""):
-        self.__settings = settings
+    def __init__(self, autoReadableDate: bool=False, autoRemovePastEvents: bool=False, rawiCal:str=""):
+        self.__autoReadableDate = autoReadableDate
+        self.__autoRemovePastEvents = autoRemovePastEvents
         self.__rawICAL = ""
-        self.__2dICAL = []
         self.__ICAL = {}
         if rawiCal != "":
             self.load_iCal(rawiCal)
@@ -161,9 +120,9 @@ class iCal:
         '''
         Assumes ICAL has already been converted to dict
         '''
-        if self.__settings.getAutoReadableDate():
+        if self.__autoReadableDate:
             self.convert_times()
-        if self.__settings.getAutoRemovePastEvents():
+        if self.__autoRemovePastEvents:
             self.remove_past_events()
 
     def __validate_iCal(self, iCal:str) -> bool:
@@ -230,7 +189,7 @@ class iCal:
 
         return objectDict
 
-    def __requestFromWebpage(self, url: str) -> Union[str]:
+    def __requestFromWebpage(self, url: str) -> Union[str, None]:
         '''
         Sends a request to the URL and returns the text response
         '''
@@ -282,6 +241,30 @@ class iCal:
 
         return readableDT
 
+    def set_setting(self, setting: str, value: bool) -> None:
+        '''
+        Sets the setting to the new value
+        '''
+        if setting == "autoReadableDate":
+            self.__autoReadableDate = value
+        if setting == "autoRemovePastEvents":
+            self.__autoRemovePastEvents = value
+
+    def get_setting(self, setting: str) -> bool:
+        '''
+        Returns the value for the specified setting
+        '''
+        if setting == "autoReadableDate":
+            return self.__autoReadableDate
+        if setting == "autoRemovePastEvents":
+            return self.__autoRemovePastEvents
+
+    def get_raw_ical(self) -> str:
+        '''
+        Returns the raw iCal data provided by the user
+        '''
+        return self.__rawICAL
+
     def get_json(self) -> dict:
         '''
         Returns the iCal events as a json format (dict)
@@ -300,8 +283,8 @@ class iCal:
         '''
         if self.__validate_iCal(iCal):
             self.__rawICAL = iCal
-            self.__2dICAL = self.__object_string_to_2dlist(self.__rawICAL)
-            self.__ICAL = self.__object_list_to_dict(self.__2dICAL)
+            ICAL2d = self.__object_string_to_2dlist(self.__rawICAL)
+            self.__ICAL = self.__object_list_to_dict(ICAL2d)
             self.__auto_settings()
         else:
             raise ICALLoadError(evidence=iCal)
